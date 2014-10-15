@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_camera">open camera</string>
+    <string name="scan_result">scan result:</string>
+    <string name="app_name">QRCodeGenius</string>
+    <string name="hint">input the text</string>
+    <string name="generate_qrcode">Generate QRCode</string>
+    <string name="scan_qrcode">Scan QRCode</string>
+    <string name="descrption">this is a QRCode that generated for your input</string>
+    <string name="cancel">Cancel</string>
+    <string name="weibo_share">Share QRCode to Weibo</string>
+    <string name="cancel_download_weibo">\tCancel Download</string>         
+</resources>
