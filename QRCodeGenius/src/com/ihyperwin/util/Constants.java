@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package com.sina.weibo;
+package com.ihyperwin.util;
 
 /**
- * 该类定义了微博授权时所需要的参数。
+ * 该类定义了授权时所需要的参数。
  * 
  * @author ihyperwin
  * @since 2014-10-15
  */
 public interface Constants {
 
-    /** 本应用的 APP_KEY，本key归属ihyperwin所有，其它应用应该使用自己的 APP_KEY 替换该 APP_KEY，谢谢 */
+    /** 本应用的 微博APP_KEY，本key归属ihyperwin所有，其它应用应该使用自己的 APP_KEY 替换该 APP_KEY，谢谢 */
     public static final String APP_KEY      = "1455437505";
+    
+    /**微信的APP_ID */
+    public static final String WX_APP_ID      = "1455437505";
+    
 
     /** 
      * 当前 DEMO 应用的回调页，第三方应用可以使用自己的回调页。

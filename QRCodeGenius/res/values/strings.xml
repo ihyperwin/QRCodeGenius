@@ -1,13 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="open_camera">open camera</string>
-    <string name="scan_result">scan result:</string>
+    <string name="open_camera">打开相机</string>
+    <string name="scan_result">扫描结果：</string>
     <string name="app_name">QRCodeGenius</string>
-    <string name="hint">input the text</string>
-    <string name="generate_qrcode">Generate QRCode</string>
-    <string name="scan_qrcode">Scan QRCode</string>
-    <string name="descrption">this is a QRCode that generated for your input</string>
-    <string name="cancel">Cancel</string>
-    <string name="weibo_share">Share QRCode to Weibo</string>
-    <string name="cancel_download_weibo">\tCancel Download</string>         
+    <string name="hint">请输入</string>
+    <string name="generate_qrcode">生成二维码</string>
+    <string name="scan_qrcode">扫描二维码</string>
+    <string name="descrption">这是根据您的输入生成的二维码</string>
+    <string name="share_qrcode_to">分享二维码到:</string>
+    <string name="cancel">取消</string>
+    <string name="cancel_download_weibo">\t取消下载</string>   
+    
+     <string name="app_cancel">取消</string>
+     <string name="send_img">发送二维码图片</string>
+     <string-array name="send_img_item">
+        <item>发送给朋友</item>
+        <item>分享到朋友圈</item>
+    </string-array>
+    
+     <string name="share_success">分享成功</string>
+     <string name="share_cancel">分享取消</string>
+     <string name="share_fail">分享失败</string>
+     <string name="auth_fail">授权失败</string>
+     
+     
 </resources>

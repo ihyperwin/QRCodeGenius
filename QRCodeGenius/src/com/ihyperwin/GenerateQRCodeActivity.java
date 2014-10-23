@@ -2,6 +2,7 @@ package com.ihyperwin;
 
 import com.google.zxing.WriterException;
 import com.ihyperwin.R;
+import com.ihyperwin.util.AlertManager;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.WeiboMessage;
 import com.sina.weibo.sdk.api.share.BaseResponse;
@@ -18,7 +19,13 @@ import com.sina.weibo.sdk.constant.WBConstants;
 import com.sina.weibo.sdk.exception.WeiboException;
 import com.sina.weibo.sdk.exception.WeiboShareException;
 import com.sina.weibo.AccessTokenKeeper;
-import com.sina.weibo.Constants;
+import com.ihyperwin.util.Constants;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.SendMessageToWX;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
+import com.tencent.mm.sdk.openapi.WXImageObject;
+import com.tencent.mm.sdk.openapi.WXMediaMessage;
+import com.tencent.mm.sdk.platformtools.Util;
 import com.zxing.encoding.EncodingHandler;
 
 import android.app.Activity;
@@ -38,8 +45,10 @@ import android.widget.Toast;
 public class GenerateQRCodeActivity extends Activity implements
 		IWeiboHandler.Response {
 
+	/**用户输入的字符串*/
 	private EditText qrStrEditText;
 
+	/**生成的二维码图片*/
 	private ImageView qrImgImageView;
 
 	/** 微博微博分享接口实例 */
@@ -53,6 +62,21 @@ public class GenerateQRCodeActivity extends Activity implements
 
 	/** 注意：SsoHandler 仅当 SDK 支持 SSO 时有效 */
 	private SsoHandler mSsoHandler;
+	
+	/**微博分享按钮图片 */
+	private ImageView weiboShareView;
+	
+	/**微信分享按钮图片 */
+	private ImageView wechatShareView;
+	
+	/**微信API*/
+	private IWXAPI wxApi;
+	
+	/**分享给朋友*/   
+	private static final int ShareToFriend  =  0;
+	
+	/**分享到朋友圈*/
+	private static final int ShareToFriendsCircle =  1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -61,6 +85,8 @@ public class GenerateQRCodeActivity extends Activity implements
 
 		qrStrEditText = (EditText) this.findViewById(R.id.et_qr_string);
 		qrImgImageView = (ImageView) this.findViewById(R.id.iv_qr_image);
+		weiboShareView = (ImageView) this.findViewById(R.id.weibo_share);
+		wechatShareView = (ImageView) this.findViewById(R.id.wechat_share);
 
 		Button generateQRCodeButton = (Button) this
 				.findViewById(R.id.btn_add_qrcode);
@@ -82,10 +108,16 @@ public class GenerateQRCodeActivity extends Activity implements
 					}
 
 				} catch (WriterException e) {
-					e.printStackTrace();
+					Log.e("generate QRCode Error",e.toString());
 				}
 			}
 		});
+		
+		
+		//微信实例化 start
+		wxApi = WXAPIFactory.createWXAPI(this, Constants.WX_APP_ID);
+		wxApi.registerApp(Constants.WX_APP_ID);
+		//微信实例化 end
 
 		// ********************************************************** 分享到微博功能
 		// start
@@ -121,8 +153,8 @@ public class GenerateQRCodeActivity extends Activity implements
 			mWeiboShareAPI.handleWeiboResponse(getIntent(), this);
 		}
 
-		Button weiboShare = (Button) this.findViewById(R.id.weibo_share);
-		weiboShare.setOnClickListener(new OnClickListener() {
+		weiboShareView.setImageDrawable( (BitmapDrawable) getResources().getDrawable(R.drawable.sina_logo));
+		weiboShareView.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -149,6 +181,44 @@ public class GenerateQRCodeActivity extends Activity implements
 				}
 			}
 		});
+		
+		//填充微信图片
+		wechatShareView.setImageDrawable( (BitmapDrawable) getResources().getDrawable(R.drawable.wechat_logo));
+		wechatShareView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				AlertManager.showAlert(GenerateQRCodeActivity.this, getString(R.string.send_img), 
+						GenerateQRCodeActivity.this.getResources().getStringArray(R.array.send_img_item),
+						null, new AlertManager.OnAlertSelectId(){
+
+					@Override
+					public void onClick(int whichButton) {						
+						switch(whichButton){
+						//分享到朋友圈
+						case ShareToFriend: {
+							sendPictureToWeChat(ShareToFriend);
+							break;
+						}
+						//发送给朋友
+						case ShareToFriendsCircle: {
+							sendPictureToWeChat(ShareToFriendsCircle);
+							break;
+						}
+						default:
+							break;
+						}
+					}
+					
+				},null);
+				
+			}
+			});
+		
+	}
+	
+	private String buildTransaction(final String type) {
+		return (type == null) ? String.valueOf(System.currentTimeMillis()) : type + System.currentTimeMillis();
 	}
 
 	@Override
@@ -164,13 +234,13 @@ public class GenerateQRCodeActivity extends Activity implements
 	public void onResponse(BaseResponse baseResp) {
 		switch (baseResp.errCode) {
 		case WBConstants.ErrorCode.ERR_OK:
-			Toast.makeText(this, "Share to Weibo Success！", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.share_success), Toast.LENGTH_LONG).show();
 			break;
 		case WBConstants.ErrorCode.ERR_CANCEL:
-			Toast.makeText(this, "Share is Canceled！", Toast.LENGTH_LONG).show();
+			Toast.makeText(this,  getString(R.string.share_cancel), Toast.LENGTH_LONG).show();
 			break;
 		case WBConstants.ErrorCode.ERR_FAIL:
-			Toast.makeText(this, "Share to Weibo Failure！" + "Error Message: " + baseResp.errMsg,
+			Toast.makeText(this,  getString(R.string.share_fail) + "Error Message: " + baseResp.errMsg,
 					Toast.LENGTH_LONG).show();
 			break;
 		}
@@ -211,6 +281,21 @@ public class GenerateQRCodeActivity extends Activity implements
 		}
 		imageObject.setImageObject(bitmapDrawable.getBitmap());
 		return imageObject;
+	}
+	
+	/**
+	 * 创建 BitMap
+	 * @return BitMap
+	 */
+	private Bitmap getBitmap(){
+		BitmapDrawable bitmapDrawable=null;
+		if(qrImgImageView!=null&&qrImgImageView.getDrawable()!=null){
+			bitmapDrawable = (BitmapDrawable) qrImgImageView.getDrawable();
+		}
+		else{//如果二维码未生成，直接点击分享到微博按钮，则默认分享本app的logo
+			bitmapDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_launcher);
+		}
+	  return bitmapDrawable.getBitmap();
 	}
 
 	@Override
@@ -264,16 +349,39 @@ public class GenerateQRCodeActivity extends Activity implements
 
 		@Override
 		public void onCancel() {
-			Toast.makeText(GenerateQRCodeActivity.this, "cancel",
+			Toast.makeText(GenerateQRCodeActivity.this,  getString(R.string.app_cancel),
 					Toast.LENGTH_LONG).show();
 		}
 
 		@Override
 		public void onWeiboException(WeiboException e) {
 			Toast.makeText(GenerateQRCodeActivity.this,
-					"Auth exception : " + e.getMessage(), Toast.LENGTH_LONG)
+					getString(R.string.auth_fail) + e.getMessage(), Toast.LENGTH_LONG)
 					.show();
 		}
+	}
+	
+	private void sendPictureToWeChat(int flag){
+		Bitmap bmp = getBitmap();
+		WXImageObject imgObj = new WXImageObject(bmp);
+		
+		WXMediaMessage msg = new WXMediaMessage();
+		msg.mediaObject = imgObj;
+		
+		Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, 150, 150, true);
+		bmp.recycle();
+		msg.thumbData = Util.bmpToByteArray(thumbBmp, true); 
+
+		SendMessageToWX.Req req = new SendMessageToWX.Req();
+		req.transaction = buildTransaction("img");
+		req.message = msg;
+		if(ShareToFriendsCircle==flag){//发送到朋友圈
+			req.scene=SendMessageToWX.Req.WXSceneTimeline;
+		}else if(ShareToFriend==flag){//发送给朋友
+			req.scene=SendMessageToWX.Req.WXSceneSession;
+		}
+	
+		wxApi.sendReq(req);
 	}
 
 }
