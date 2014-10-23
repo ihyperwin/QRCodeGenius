@@ -369,8 +369,8 @@ public class GenerateQRCodeActivity extends Activity implements
 		msg.mediaObject = imgObj;
 		
 		Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, 150, 150, true);
-		bmp.recycle();
-		msg.thumbData = Util.bmpToByteArray(thumbBmp, true); 
+	//	bmp.recycle();  //不回收，防止以后用到
+		msg.thumbData = Util.bmpToByteArray(thumbBmp, false);  //不回收，防止以后用到
 
 		SendMessageToWX.Req req = new SendMessageToWX.Req();
 		req.transaction = buildTransaction("img");

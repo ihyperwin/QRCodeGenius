@@ -28,7 +28,7 @@ public interface Constants {
     public static final String APP_KEY      = "1455437505";
     
     /**微信的APP_ID */
-    public static final String WX_APP_ID      = "1455437505";
+    public static final String WX_APP_ID      = "wxc08ca6aff912b5c3";
     
 
     /** 
